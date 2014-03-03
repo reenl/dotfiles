@@ -1,4 +1,24 @@
-[user]
-        email = reen@alphacomm.nl
-        name = Reen Lokum
+[color]
+        ui = auto
 
+[color "diff"]
+        meta = blue
+        frag = white
+        old = red bold
+        new = green bold
+
+[core]
+        editor = vim
+        # http://stackoverflow.com/questions/136178/git-diff-handling-long-lines
+        # If doesn't work, try: pager = less -+$LESS -FRX
+        pager = less -r
+        autocrlf = false
+        safecrlf = false
+        mergeoptions = --no-edit
+        excludesfile = ~/.gitignore
+
+[push]
+        default = simple
+
+[include]
+    path = .gitlocal
