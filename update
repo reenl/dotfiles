@@ -1,0 +1,6 @@
+#!/bin/bash
+pushd "$HOME/dotfiles" > /dev/null || exit 1;
+git pull
+./sync
+source "$HOME/.bashrc"
+popd > /dev/null
