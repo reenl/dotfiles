@@ -39,7 +39,10 @@ function _prepend_path() {
 }
 
 # Construct $PATH
-PATH='/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+[ -d /bin ] && _prepend_path "/bin"
+[ -d /usr/bin ] && _prepend_path "/usr/bin"
+[ -d /sbin ] && _prepend_path "/sbin"
+[ -d /usr/sbin ] && _prepend_path "/usr/sbin"
 [ -d /usr/local/bin ] && _prepend_path "/usr/local/bin"
 [ -d ~/dotfiles/bin ] && _prepend_path "$HOME/dotfiles/bin"
 [ -d ~/bin ] && _prepend_path "$HOME/bin"
