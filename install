@@ -12,4 +12,9 @@ fi
 echo "Installing dotfiles..."
 cd ~ && git clone https://github.com/reenl/dotfiles.git && cd dotfiles && ./sync
 source ~/.bashrc
+
 echo "Dotfiles installed successfully."
+
+echo "Installing composer..."
+curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
+echo "Composer installed successfully."

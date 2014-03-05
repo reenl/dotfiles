@@ -3,4 +3,9 @@ pushd "$HOME/dotfiles" > /dev/null || exit 1;
 git pull
 ./sync
 source "$HOME/.bashrc"
+if [ ! -f bin/composer ]
+then
+	curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
+fi
+bin/composer self-update
 popd > /dev/null

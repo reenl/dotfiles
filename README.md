@@ -21,10 +21,10 @@ dotfiles
 * Custom Bash prompt.
 * Git config, Git global ignore file.
 * Dotfiles syncronization (`sync`).
+* Composer (+updates)
 
 ## TODO
 
-* Composer (+updates)
 * Automatic `.gitlocal` generation.
 * Key discovery & download.
 * Symfony 2 autocompletion
@@ -49,5 +49,4 @@ You can use any file extensions in `tilde/` to invoke proper syntax highlighting
 * [Zach Holman’s dotfiles](https://github.com/holman/dotfiles)
 * [Jacob Gillespie’s dotfiles](https://github.com/jacobwg/dotfiles)
 * [Yet Another Dotfile Repo](https://github.com/skwp/dotfiles)
-* [Mac OS X Lion Setup](https://github.com/ptb/Mac-OS-X-Lion-Setup)
 * [Yet another cool story about bash prompt](http://habrahabr.ru/company/mailru/blog/145008/) (in Russian)
