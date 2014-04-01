@@ -78,7 +78,7 @@ function prompt_command() {
 
 	# Terminal title
 	local title="$(basename $PWD)"
-	[ -n "$remote" ] && title="$title \xE2\x80\x94 $HOSTNAME"
+	[ -n "$remote" ] && title="$title | $HOSTNAME"
 	echo -ne "\033]0;$title"; echo -ne "\007"
 }
 
