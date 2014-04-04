@@ -13,6 +13,7 @@ echo "Installing dotfiles..."
 cd ~ && git clone https://github.com/reenl/dotfiles.git &&
 cd dotfiles &&
 git submodule init &&
+git submodule update &&
 ./sync
 
 source ~/.bashrc
