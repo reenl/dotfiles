@@ -10,7 +10,11 @@ fi
 
 # Clone dotfiles and make symlinks
 echo "Installing dotfiles..."
-cd ~ && git clone https://github.com/reenl/dotfiles.git && cd dotfiles && ./sync
+cd ~ && git clone https://github.com/reenl/dotfiles.git &&
+cd dotfiles &&
+git submodule init &&
+./sync
+
 source ~/.bashrc
 
 echo "Dotfiles installed successfully."
