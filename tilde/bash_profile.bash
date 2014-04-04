@@ -63,7 +63,7 @@ INVERT="$(tput sgr 1 0)"
 NOCOLOR="$(tput sgr0)"
 
 # Load prompt and aliases
-for file in ~/dotfiles/includes/bash_{prompt,aliases,functions,git}.bash; do
+for file in ~/dotfiles/includes/bash_{prompt,aliases,functions,git,dircolors}.bash; do
 	[ -r "$file" ] && source "$file"
 done
 unset file
