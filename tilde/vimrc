@@ -76,7 +76,7 @@ nmap <C-N> :set invnumber<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Reen: Line numbers do not enable them by default.
 set nonumber 
-set numberwidth=8
+set numberwidth=6
 
 
 " Set 7 lines to the cursor - when moving vertically using j/k
@@ -135,13 +135,14 @@ set tm=500
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Enable syntax highlighting
-syntax enable 
 
 " Reen: use solarized.
 let g:solarized_termcolors = 256
 colorscheme solarized
 set background=dark
+
+" Enable syntax highlighting
+syntax enable
 
 " Set extra options when running in GUI mode
 if has("gui_running")
