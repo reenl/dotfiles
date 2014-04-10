@@ -29,7 +29,6 @@ fi
 echo -n "Updating composer and dependencies... "
 bin/composer --quiet self-update
 bin/composer --quiet global require fabpot/php-cs-fixer @dev
-bin/composer --quiet global update
 echo "Done."
 
 if [ ! -L resources/git-template/hooks ]
