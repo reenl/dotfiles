@@ -27,6 +27,8 @@ $exit = 0;
 $output = array();
 exec('git diff --cached --name-status --diff-filter=ACM', $output);
 
+// Filter files that don't need a check.
+$fileList = array();
 foreach ($output as $file) {
     if ('D' === substr($file, 0, 1)) {
         // deleted file; do nothing
@@ -43,20 +45,31 @@ foreach ($output as $file) {
         continue;
     }
 
+    $fileList[] = $fileName;
+}
+
+$syntaxErrorHeader = 'Syntaxt errors:'.PHP_EOL;
+foreach ($fileList as $fileName) {
     /*
      * Check for parse errors
      */
     $output = array();
     $return = 0;
-    exec("php -l " . escapeshellarg($fileName), $output, $return);
+    exec("php -l " . escapeshellarg($fileName).' 2>&1', $output, $return);
 
     if ($return != 0) {
-        echo "PHP file fails to parse: " . $fileName . ":" . PHP_EOL;
-        echo implode(PHP_EOL, $output) . PHP_EOL;
+        echo $syntaxErrorHeader;
+        $syntaxErrorHeader = '';
+
+        echo '  - '.$fileName.PHP_EOL;
+        echo '    '.$output[0].PHP_EOL.PHP_EOL;
         $exit = 1;
         continue;
     }
+}
 
+$codeStyleHeader = 'Code Style Errors:'.PHP_EOL;
+foreach ($fileList as $fileName) {
     /*
      * PHP-CS-Fixer
      */
@@ -71,8 +84,13 @@ foreach ($output as $file) {
 
     // Check output
     if ($return != 0 || !empty($output)) {
-        echo "PHP file contains CS issues: " . $fileName . ":" . PHP_EOL;
-        echo implode(PHP_EOL, $output) . PHP_EOL;
+        echo $codeStyleHeader;
+        $codeStyleHeader = '';
+
+        $matches = array();
+        preg_match('#\((.*)\)#', $output[0], $matches);
+        echo '  - '.$fileName.PHP_EOL;
+        echo '    '.$matches[1].PHP_EOL.PHP_EOL;
         $exit = 1;
         continue;
     }
