@@ -136,13 +136,13 @@ set tm=500
 " => Colors and Fonts
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Reen: use solarized.
-let g:solarized_termcolors = 256
-colorscheme solarized
-set background=dark
-
 " Enable syntax highlighting
 syntax enable
+
+" Reen: use solarized.
+let g:solarized_termcolors=256
+set background=dark
+colorscheme solarized
 
 " Set extra options when running in GUI mode
 if has("gui_running")
