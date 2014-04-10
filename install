@@ -10,16 +10,16 @@ fi
 
 # Clone dotfiles and make symlinks
 echo "Installing dotfiles..."
-cd ~ && git clone https://github.com/reenl/dotfiles.git &&
-cd dotfiles &&
-git submodule init &&
-git submodule update &&
-./sync
+cd ~ &&
 
-source ~/.bashrc
+# Glone it
+git clone https://github.com/reenl/dotfiles.git &&
+
+# Update
+dotfiles/update
+
+# Attempt to update the current session.
+source "~/.bashrc"
 
 echo "Dotfiles installed successfully."
 
-echo "Installing composer..."
-curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
-echo "Composer installed successfully."
