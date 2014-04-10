@@ -1,0 +1,1 @@
+You can add global git hooks in this directory.

@@ -17,5 +17,9 @@
     mergeoptions = --no-edit
     excludesfile = ~/.gitignore
 
+[init]
+    templatedir = ~/dotfiles/resources/git-template
+
+
 [include]
     path = ~/.gitlocal

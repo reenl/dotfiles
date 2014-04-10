@@ -38,6 +38,8 @@ function _prepend_path() {
 	fi
 }
 
+export COMPOSER_HOME="$HOME/.composer"
+
 # Construct $PATH
 [ -d /bin ] && _prepend_path "/bin"
 [ -d /usr/bin ] && _prepend_path "/usr/bin"
@@ -45,6 +47,7 @@ function _prepend_path() {
 [ -d /usr/sbin ] && _prepend_path "/usr/sbin"
 [ -d /usr/local/bin ] && _prepend_path "/usr/local/bin"
 [ -d ~/dotfiles/bin ] && _prepend_path "$HOME/dotfiles/bin"
+[ -d "$COMPOSER_HOME/vendor/bin" ] && _prepend_path "$COMPOSER_HOME/vendor/bin"
 [ -d ~/bin ] && _prepend_path "$HOME/bin"
 export PATH
 
