@@ -62,7 +62,7 @@ foreach ($output as $file) {
      */
     $output = array();
     $return = null;
-    exec("php-cs-fixer fix --dry-run --config-file=~/dotfiles/resources/php-cs-fixer " . escapeshellarg($fileName), $output, $return);
+    exec("php-cs-fixer fix --dry-run --verbose --level=all " . escapeshellarg($fileName), $output, $return);
 
     // Ignore config load line
     if (isset($output[0]) && strpos($output[0], 'Loaded config from') !== false) {
