@@ -1,12 +1,28 @@
 #!/bin/bash
 pushd "$HOME/dotfiles" > /dev/null || exit 1;
+
+CURRENT_HASH=`md5sum update | awk '{ print $1 }'`
+
+echo -n "Pulling changes... "
 git pull
 git submodule init
 git submodule update
+
+NEW_HASH=`md5sum update | awk '{ print $1 }'`
+if [ "$CURRENT_HASH" != "$NEW_HASH" ]
+then
+    echo "The update script has changed."
+    ./update
+    exit
+fi
+
+echo "Syncing..."
 ./sync
+
 source "$HOME/.bashrc"
 if [ ! -f bin/composer ]
 then
+    echo "Installing composer..."
 	curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
 fi
 bin/composer self-update
