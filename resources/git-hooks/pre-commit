@@ -6,11 +6,10 @@
  * This pre-commit hooks will check for PHP errors (lint), and make sure the
  * code is PSR-2 compliant.
  *
- * Dependency: PHP-CS-Fixer (https://github.com/fabpot/PHP-CS-Fixer)
+ * @author  Reen Lokum http://github.com/reenl
  *
- * @author  Mardix  http://github.com/mardix
- * @author  Matthew Weier O'Phinney http://mwop.net/
- * @since   4 Sept 2012
+ * The orignal version of this file can be found at:
+ * https://github.com/zendframework/zf2/blob/master/README-GIT.md
  */
 
 $extensions = array(
