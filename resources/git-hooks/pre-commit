@@ -67,6 +67,12 @@ foreach ($fileList as $fileName) {
     }
 }
 
+// Use .php_cs config if project has one.
+$configFile = '';
+if (file_exists('.php_cs')) {
+    $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
+}
+
 $codeStyleHeader = 'Code Style Errors:'.PHP_EOL;
 foreach ($fileList as $fileName) {
     /*
@@ -74,10 +80,14 @@ foreach ($fileList as $fileName) {
      */
     $output = array();
     $return = null;
-    exec("php-cs-fixer fix --dry-run --verbose --level=all " . escapeshellarg($fileName), $output, $return);
+    exec('php-cs-fixer fix --dry-run --verbose --level=all'.$configFile.' '.escapeshellarg($fileName), $output, $return);
 
     // Ignore config load line
     if (isset($output[0]) && strpos($output[0], 'Loaded config from') !== false) {
+        array_shift($output);
+    }
+
+    while (isset($output[0]) && substr($output[0], 0, 1) == '!') {
         array_shift($output);
     }
 
@@ -88,8 +98,13 @@ foreach ($fileList as $fileName) {
 
         $matches = array();
         preg_match('#\((.*)\)#', $output[0], $matches);
-        echo '  - '.$fileName.PHP_EOL;
-        echo '    '.$matches[1].PHP_EOL.PHP_EOL;
+        echo '  - '.$fileName.' (Exit code: '.$return.')'.PHP_EOL;
+        if (!isset($matches[1])) {
+            echo '    Unable to parse php-cs-fixer output:'.PHP_EOL;
+            echo implode(PHP_EOL.'        ', $output).PHP_EOL;
+        } else {
+            echo '    '.$matches[1].PHP_EOL.PHP_EOL;
+        }
         $exit = 1;
         continue;
     }
