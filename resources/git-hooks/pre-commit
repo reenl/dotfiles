@@ -10,104 +10,233 @@
  *
  * The orignal version of this file can be found at:
  * https://github.com/zendframework/zf2/blob/master/README-GIT.md
+ *
+ * Extended with functionality found at:
+ * http://kvz.io/blog/2013/12/29/one-git-commit-hook-to-rule-them-all/
  */
 
-$extensions = array(
-    'php',
-    'phtml',
-);
-
 $exit = 0;
+
+// Initial commit
+$against = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
+if (run('git rev-parse --verify HEAD > /dev/null')) {
+    $against = 'HEAD';
+}
+
+// Only run when we're on a branch (to avoid rebase hell)
+// http://git-blame.blogspot.nl/2013/06/checking-current-branch-programatically.html
+$branch = run('git symbolic-ref --short -q HEAD');
+if (!$branch) {
+    writeln('Not on any branch');
+    exit(0);
+}
 
 /*
  * collect all files which have been added, copied or
  * modified and store them in an array called output
  */
-$output = array();
-exec('git diff --cached --name-status --diff-filter=ACM', $output);
+$diffLines = array();
+exec('git diff-index --cached --full-index --diff-filter=ACM '.$against, $diffLines);
+
+writeln();
 
 // Filter files that don't need a check.
-$fileList = array();
-foreach ($output as $file) {
-    if ('D' === substr($file, 0, 1)) {
+foreach ($diffLines as $line) {
+    $partList = preg_split('#\s+#', $line, 6);
+    $hash = $partList[3];
+    $status = $partList[4];
+    $fileName = $partList[5];
+    if ('D' === $status) {
         // deleted file; do nothing
         continue;
     }
 
-    $fileName = trim(substr($file, 1));
-
-    /*
-     * Only PHP files
-     */
-    $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-    if (!in_array($extension, $extensions)) {
-        continue;
-    }
-
-    $fileList[] = $fileName;
-}
-
-$syntaxErrorHeader = 'Syntaxt errors:'.PHP_EOL;
-foreach ($fileList as $fileName) {
-    /*
-     * Check for parse errors
-     */
-    $output = array();
-    $return = 0;
-    exec("php -l " . escapeshellarg($fileName).' 2>&1', $output, $return);
-
-    if ($return != 0) {
-        echo $syntaxErrorHeader;
-        $syntaxErrorHeader = '';
-
-        echo '  - '.$fileName.PHP_EOL;
-        echo '    '.$output[0].PHP_EOL.PHP_EOL;
-        $exit = 1;
-        continue;
-    }
-}
-
-// Use .php_cs config if project has one.
-$configFile = '';
-if (file_exists('.php_cs')) {
-    $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
-}
-
-$codeStyleHeader = 'Code Style Errors:'.PHP_EOL;
-foreach ($fileList as $fileName) {
-    /*
-     * PHP-CS-Fixer
-     */
-    $output = array();
-    $return = null;
-    exec('php-cs-fixer fix --dry-run --verbose --level=all'.$configFile.' '.escapeshellarg($fileName), $output, $return);
-
-    // Ignore config load line
-    if (isset($output[0]) && strpos($output[0], 'Loaded config from') !== false) {
-        array_shift($output);
-    }
-
-    while (isset($output[0]) && substr($output[0], 0, 1) == '!') {
-        array_shift($output);
-    }
-
-    // Check output
-    if ($return != 0 || !empty($output)) {
-        echo $codeStyleHeader;
-        $codeStyleHeader = '';
-
-        $matches = array();
-        preg_match('#\((.*)\)#', $output[0], $matches);
-        echo '  - '.$fileName.' (Exit code: '.$return.')'.PHP_EOL;
-        if (!isset($matches[1])) {
-            echo '    Unable to parse php-cs-fixer output:'.PHP_EOL;
-            echo implode(PHP_EOL.'        ', $output).PHP_EOL;
-        } else {
-            echo '    '.$matches[1].PHP_EOL.PHP_EOL;
+    $type = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $validator = 'validator_'.$type;
+    if (!$type || !function_exists($validator)) {
+        $type = run("git cat-file -p ".$hash." | head -n1 | awk -F/ '/^#\!/ {print \$NF}' | sed 's/^env //g'");
+        $validator = 'validator_'.$type;
+        if (!function_exists($validator)) {
+            // No validator
+            writeln('No syntax checking for '.format($fileName, 'green').'.');
+            continue;
         }
+    }
+
+    write('  Checking '.format($fileName, 'green').' with validator '.format($type, 'green').'. ');
+
+    $output = '';
+    if (!$validator($hash, $fileName, $output)) {
+        writeln(PHP_EOL.'X ERROR '.implode(PHP_EOL.'  ', explode(PHP_EOL, $output)).PHP_EOL, 'red');
         $exit = 1;
         continue;
     }
+    writeln('OK', 'green');
+}
+
+if ($exit > 0) {
+    writeln(PHP_EOL."Please fix the above errors and run 'git add'.", 'gray');
 }
 
 exit($exit);
+
+function validator_php($hash, $fileName, &$output)
+{
+    if (validator_php_syntax($hash, $fileName, $output)) {
+        return validator_php_cs($hash, $fileName, $output);
+    }
+
+    return false;
+}
+
+function validator_php_syntax($hash, $fileName, &$output)
+{
+    $output = '';
+    $exitCode = 0;
+
+    $result = run('git cat-file -p '.escapeshellarg($hash).' | php -l', $output, $exitCode, "purge", "default");
+    if ($result) {
+        return true;
+    }
+
+    $output = 'Syntax Error:'.PHP_EOL.$output;
+    return false;
+}
+
+function validator_php_cs($hash, $fileName, &$output)
+{
+    // Use .php_cs config if project has one.
+    $configFile = '';
+    if (file_exists('.php_cs')) {
+        $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
+    }
+
+    $tmpDir = '/tmp/'.$hash;
+    $tmp =  $tmpDir.'/'.$fileName;
+    run('mkdir -p '.dirname($tmp));
+    run('git cat-file -p '.escapeshellarg($hash).' > '.$tmp);
+
+    $return = null;
+    run('php-cs-fixer fix --dry-run --verbose --level=all'.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return);
+
+    run('rm -rf '.escapeshellarg($tmpDir));
+
+    $out = explode(PHP_EOL, $currentOutput);
+
+    // Ignore config load line
+    if (isset($out[0]) && strpos($out[0], 'Loaded config from') !== false) {
+        array_shift($out);
+    }
+
+    while (isset($out[0]) && ($out[0] == '' || substr($out[0], 0, 1) == '!')) {
+        array_shift($out);
+    }
+
+    // Check output
+    if ($return != 0 || !empty($out)) {
+        if (preg_match('#\((.*)\)#', $out[0], $matches)) {
+            $output = 'Code Style errors:'.PHP_EOL.$matches[1];
+        } else {
+            $output = implode(PHP_EOL, $out);
+        }
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Runs like exec with a few changes:
+ * - Output is returned as a string.
+ * - Output is NOT appended.
+ * - STDERR is also added to the output.
+ * - STDERR and/or STDOUT can be disabled by passing purge.
+ * - Returns the first output line if successful and false when failed.
+ * - If no output is generated and the exit status equals 0 then true is returned.
+ *
+ * @param string $command
+ * @param string &$output
+ * @param int &$exitCode
+ * @param string $stdout
+ * @param string $stderr
+ *
+ * @return boolean
+ */
+function run($command, &$output = '', &$exitCode = 0, $stdout = 'default', $stderr = 'purge')
+{
+    $modes = array(
+        'gray'  => "'s,.*,\\x1B[37m&\\x1B[m,'",
+        'green' => "'s,.*,\\x1B[32m&\\x1B[m,'",
+        'red'   => "'s,.*,\\x1B[31m&\\x1B[m,'",
+        'purge' => "'/.*/d'",
+        'default' => "'s,.*,&,'",
+    );
+    if (!isset($modes[$stdout])) {
+        writeln($stdout.' is not a valid output mode.');
+        exit(1);
+    }
+    if (!isset($modes[$stderr])) {
+        writeln($stderr.' is not a valid output mode.');
+        exit(1);
+    }
+
+    $redirect = array(
+        // Backup stdout to 3, and put stderr in stdout, replace, and put back to stderr
+        '({}) 2>&1>&3 | sed '.$modes[$stderr].' >&2',
+        // Put the original stdout back and replace it.
+        '({}) 3>&1 | sed '.$modes[$stdout],
+        // Put them into stdout, because exec can not catch stderr
+        '({}) 2>&1',
+        // Make sure we get the correct exit status.
+        'set -o pipefail; {}',
+    );
+    foreach ($redirect as $line) {
+        $command = str_replace('{}', $command, $line);
+    }
+
+    exec($command, $out, $exitCode);
+    $output = implode(PHP_EOL, $out);
+
+    if ($exitCode == 0) {
+        if (!isset($out[0])) {
+            return true;
+        }
+        return $out[0];
+    }
+
+    return false;
+}
+
+function format($string, $color = 'default')
+{
+    if ($color == 'default') {
+        return $string;
+    }
+
+    if ($color == 'purge') {
+        return '';
+    }
+
+    $colors = array(
+        'gray'  => 37,
+        'green' => 32,
+        'red'   => 31,
+    );
+
+    if (!isset($colors[$color])) {
+        writeln($color.' is not a valid color.');
+        exit(1);
+    }
+
+    return chr(0x1B).'['.$colors[$color].'m'.$string.chr(0x1B).'[m';
+}
+
+function writeln($write = '', $color = 'default')
+{
+    write($write.PHP_EOL, $color);
+}
+
+function write($write = '', $color = 'default')
+{
+    echo format($write, $color);
+    flush();
+}
