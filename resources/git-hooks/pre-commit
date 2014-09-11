@@ -129,7 +129,8 @@ function validator_php_cs($hash, $fileName, &$output)
         $rule = null;
         foreach ($out as $line) {
             if (preg_match('#\s+[0-9]+\)\s#', $line)) {
-                $rule = $out;
+                $rule = $line;
+                break;
             }
         }
 
