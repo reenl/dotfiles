@@ -58,12 +58,12 @@ foreach ($diffLines as $line) {
         $validator = 'validator_'.$type;
         if (!function_exists($validator)) {
             // No validator
-            writeln('No syntax checking for '.format($fileName, 'green').'.');
+            writeln('  Skipping '.format($fileName, 'green').' no validator available.');
             continue;
         }
     }
 
-    write('  Checking '.format($fileName, 'green').' with validator '.format($type, 'green').'. ');
+    write('  Checking '.format($fileName, 'green').' with validator '.format($type, 'green').'.');
 
     $output = '';
     if (!$validator($hash, $fileName, $output)) {
@@ -71,7 +71,7 @@ foreach ($diffLines as $line) {
         $exit = 1;
         continue;
     }
-    writeln('OK', 'green');
+    writeln(' OK', 'green');
 }
 
 if ($exit > 0) {
@@ -100,6 +100,7 @@ function validator_php_syntax($hash, $fileName, &$output)
     }
 
     $output = 'Syntax Error:'.PHP_EOL.$output;
+
     return false;
 }
 
@@ -111,7 +112,7 @@ function validator_php_cs($hash, $fileName, &$output)
         $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
     }
 
-    $tmpDir = '/tmp/'.$hash;
+    $tmpDir = '/tmp/cs-check/'.$hash;
     $tmp =  $tmpDir.'/'.$fileName;
     run('mkdir -p '.dirname($tmp));
     run('git cat-file -p '.escapeshellarg($hash).' > '.$tmp);
@@ -123,24 +124,23 @@ function validator_php_cs($hash, $fileName, &$output)
 
     $out = explode(PHP_EOL, $currentOutput);
 
-    // Ignore config load line
-    if (isset($out[0]) && strpos($out[0], 'Loaded config from') !== false) {
-        array_shift($out);
-    }
-
-    while (isset($out[0]) && ($out[0] == '' || substr($out[0], 0, 1) == '!')) {
-        array_shift($out);
+    foreach ($out as $linenumber => $line) {
+        if (!preg_match('#\s+[0-9]+\)\s#', $line)) {
+            unset($out[$linenumber]);
+        }
     }
 
     // Check output
-    if ($return != 0 || !empty($out)) {
+    if ($return != 0 || count($out) > 0) {
         if (preg_match('#\((.*)\)#', $out[0], $matches)) {
             $output = 'Code Style errors:'.PHP_EOL.$matches[1];
         } else {
             $output = implode(PHP_EOL, $out);
         }
+
         return false;
     }
+
     return true;
 }
 
@@ -163,43 +163,61 @@ function validator_php_cs($hash, $fileName, &$output)
  */
 function run($command, &$output = '', &$exitCode = 0, $stdout = 'default', $stderr = 'purge')
 {
-    $modes = array(
-        'gray'  => "'s,.*,\\x1B[37m&\\x1B[m,'",
-        'green' => "'s,.*,\\x1B[32m&\\x1B[m,'",
-        'red'   => "'s,.*,\\x1B[31m&\\x1B[m,'",
-        'purge' => "'/.*/d'",
-        'default' => "'s,.*,&,'",
+    $descriptors = array(
+        0 => array("pipe", "r"),  // stdin
+        1 => array("pipe", "w"),  // stdout
+        2 => array("pipe", "w"),   // stderr
     );
-    if (!isset($modes[$stdout])) {
-        writeln($stdout.' is not a valid output mode.');
-        exit(1);
-    }
-    if (!isset($modes[$stderr])) {
-        writeln($stderr.' is not a valid output mode.');
-        exit(1);
-    }
 
-    $redirect = array(
-        // Backup stdout to 3, and put stderr in stdout, replace, and put back to stderr
-        '({}) 2>&1>&3 | sed '.$modes[$stderr].' >&2',
-        // Put the original stdout back and replace it.
-        '({}) 3>&1 | sed '.$modes[$stdout],
-        // Put them into stdout, because exec can not catch stderr
-        '({}) 2>&1',
-        // Make sure we get the correct exit status.
-        'set -o pipefail; {}',
-    );
-    foreach ($redirect as $line) {
-        $command = str_replace('{}', $command, $line);
-    }
+    $pipes = array();
 
-    exec($command, $out, $exitCode);
+    $out = array();
+    $process = proc_open($command, $descriptors, $pipes);
+    fclose($pipes[0]);
+    unset($pipes[0]);
+
+    do {
+        $read = $pipes;
+        $write  = $except = array();
+        if (!stream_select($read, $write, $except, 5)) {
+            writeln('Timeout on process: '.$command, 'red');
+            break;
+        }
+
+        foreach ($read as $pipe) {
+            $pipeId = array_search($pipe, $pipes);
+            if ($pipeId === false) {
+                writeln('Unable to determine where the output came from.', 'red');
+            }
+
+            if (feof($pipe)) {
+                fclose($pipe);
+                if ($pipeId !== false) {
+                    unset($pipes[$pipeId]);
+                }
+                continue;
+            }
+
+            $line = fgets($pipe);
+            $color = $stderr;
+            if ($pipeId == 1) {
+                $color = $stdout;
+            }
+
+            if ($color != 'purge') {
+                $out[] = format(rtrim($line), $color);
+            }
+        }
+    } while (count($pipes) > 0);
+
+    $exitCode = proc_close($process);
     $output = implode(PHP_EOL, $out);
 
     if ($exitCode == 0) {
-        if (!isset($out[0])) {
+        if (!isset($out[0]) || $out[0] == '') {
             return true;
         }
+
         return $out[0];
     }
 
