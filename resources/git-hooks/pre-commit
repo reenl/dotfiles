@@ -58,12 +58,12 @@ foreach ($diffLines as $line) {
         $validator = 'validator_'.$type;
         if (!function_exists($validator)) {
             // No validator
-            writeln('  Skipping '.format($fileName, 'green').' no validator available.');
+            writeln('  Skipping "'.format($fileName, 'green').'" no validator available.');
             continue;
         }
     }
 
-    write('  Checking '.format($fileName, 'green').' with validator '.format($type, 'green').'.');
+    write('  Checking "'.format($fileName, 'green').'" with validator '.format($type, 'green').'.');
 
     $output = '';
     if (!$validator($hash, $fileName, $output)) {
@@ -99,7 +99,7 @@ function validator_php_syntax($hash, $fileName, &$output)
         return true;
     }
 
-    $output = 'Syntax Error:'.PHP_EOL.$output;
+    $output = 'Syntax Error'.PHP_EOL.$output;
 
     return false;
 }
@@ -118,24 +118,25 @@ function validator_php_cs($hash, $fileName, &$output)
     run('git cat-file -p '.escapeshellarg($hash).' > '.$tmp);
 
     $return = null;
-    run('php-cs-fixer fix --dry-run --verbose --level=all'.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return);
+    run('php-cs-fixer fix --dry-run --verbose --level=symfony'.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return, 'default', 'default');
 
     run('rm -rf '.escapeshellarg($tmpDir));
 
-    $out = explode(PHP_EOL, $currentOutput);
-
-    foreach ($out as $linenumber => $line) {
-        if (!preg_match('#\s+[0-9]+\)\s#', $line)) {
-            unset($out[$linenumber]);
-        }
-    }
-
     // Check output
-    if ($return != 0 || count($out) > 0) {
-        if (preg_match('#\((.*)\)#', $out[0], $matches)) {
-            $output = 'Code Style errors:'.PHP_EOL.$matches[1];
+    if ($return !== 0) {
+        $out = explode(PHP_EOL, $currentOutput);
+
+        $rule = null;
+        foreach ($out as $line) {
+            if (preg_match('#\s+[0-9]+\)\s#', $line)) {
+                $rule = $out;
+            }
+        }
+
+        if ($rule !== null && preg_match('#\((.*)\)#', $rule, $matches)) {
+            $output = 'Code Style errors'.PHP_EOL.$matches[1];
         } else {
-            $output = implode(PHP_EOL, $out);
+            $output = 'Code Style errors'.PHP_EOL.implode(PHP_EOL, $out).PHP_EOL;
         }
 
         return false;
@@ -199,6 +200,10 @@ function run($command, &$output = '', &$exitCode = 0, $stdout = 'default', $stde
             }
 
             $line = fgets($pipe);
+            if ($line === false) {
+                continue;
+            }
+
             $color = $stderr;
             if ($pipeId == 1) {
                 $color = $stdout;
