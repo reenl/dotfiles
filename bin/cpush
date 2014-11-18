@@ -1,0 +1,14 @@
+#!/bin/bash
+REMOTE="origin"
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+if [ "$BRANCH" = "HEAD" ]; then
+    echo "Not on any branch."
+    exit 1;
+fi;
+
+git pull -q --ff-only $REMOTE $BRANCH &&
+    composer update &&
+    git add composer.lock &&
+    git commit -q -m "Dependency update" &&
+    git push -q $REMOTE $BRANCH &&
+    echo "Pushed dependency update."
