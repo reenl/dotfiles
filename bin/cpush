@@ -1,14 +1,26 @@
 #!/bin/bash
-REMOTE="origin"
-BRANCH=`git rev-parse --abbrev-ref HEAD`
-if [ "$BRANCH" = "HEAD" ]; then
-    echo "Not on any branch."
+if [ $# -lt 1 ]; then
+    echo "Missing argument, please specify dependency to update."
     exit 1;
 fi;
 
+REMOTE="origin"
+BRANCH=`git rev-parse --abbrev-ref HEAD 2>/dev/null`
+if [ $? -ne 0 ] || [ "$BRANCH" = "HEAD" ]; then
+    echo "Not on any branch."
+    exit 1
+fi
+
 git pull -q --ff-only $REMOTE $BRANCH &&
-    composer update &&
+    composer update $@ &&
     git add composer.lock &&
     git commit -q -m "Dependency update" &&
     git push -q $REMOTE $BRANCH &&
     echo "Pushed dependency update."
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "Unable to update dependencies."
+    echo ""
+    exit 1
+fi;
