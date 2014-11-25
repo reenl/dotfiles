@@ -39,6 +39,14 @@ You can use any file extensions in `tilde/` to invoke proper syntax highlighting
 * Add your git username/email/etc. to `~/.gitlocal`.
 * Just fork this repo and hack on.
 
+## Out of memory issue
+
+To resolve the error "Cannot allocate memory", run the following command:
+
+```
+sudo sed -i 's/memory_limit = 128M/memory_limit = 1G/g' /etc/php.ini
+```
+
 ## Resources
 
 * [jacobkiers/dotfiles](https://bitbucket.org/jacobkiers/dotfiles)
