@@ -7,6 +7,9 @@
     old = red
     new = green
 
+[help]
+    autocorrect = 1
+
 [core]
     editor = vim
     # http://stackoverflow.com/questions/136178/git-diff-handling-long-lines
@@ -17,9 +20,37 @@
     mergeoptions = --no-edit
     excludesfile = ~/.gitignore
 
+[alias]
+    ls = log --stat
+    st = status --short --branch
+    rc = rebase --continue
+    rs = rebase --skip
+    rb = rebase
+    ri = rebase --interactive
+    rstash = stash --keep-index
+    graph = log --graph --pretty=format:'%C(magenta)%h%C(blue)%d%Creset %s %C(blue bold)- %an, %ar%Creset'
+    patch = add --patch
+    rpatch = reset HEAD --patch
+    cpatch = checkout --patch --
+    dstaged = diff --staged
+    pop = stash pop
+    ci = commit
+    master = checkout master
+    co = checkout
+
+[fetch]
+    prune = true
+
+[push]
+    default = simple
+
+[branch "master"]
+    # Rebase master by default on pull instead of merge.
+    rebase = true
+
 [init]
     templatedir = ~/dotfiles/resources/git-template
 
-
 [include]
     path = ~/.gitlocal
+
