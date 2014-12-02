@@ -42,7 +42,7 @@
     prune = true
 
 [push]
-    default = simple
+    default = current
 
 [branch "master"]
     # Rebase master by default on pull instead of merge.
