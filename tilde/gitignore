@@ -3,3 +3,6 @@
 
 # Vagrant
 .vagrant
+
+# Folder to trash stuff
+_nogit
