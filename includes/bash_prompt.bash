@@ -22,13 +22,25 @@ prompt_dirty_symbol="☂ "
 prompt_venv_symbol="☁ "
 
 function ahead_behind() {
-    curr_branch=$(git rev-parse --abbrev-ref HEAD);
-    curr_remote=$(git config branch.$curr_branch.remote);
-    curr_merge_branch=$(git config branch.$curr_branch.merge | cut -d / -f 3-);
-    if [ "" ==  "$curr_remote" ] || [ "" == "$curr_merge_branch" ]; then
-        return;
-    fi
-    git rev-list --left-right --count $curr_branch...$curr_remote/$curr_merge_branch | tr -s '\t' '|';
+	curr_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "");
+	if [ "" == "$curr_branch" ]; then
+		# Bad HEAD, probably a new repository
+		return;
+	fi
+	curr_remote=$(git config branch.$curr_branch.remote);
+	if [ "" ==  "$curr_remote" ]; then
+		# No remote
+		return;
+	fi
+	curr_merge_branch=$(git config branch.$curr_branch.merge | cut -d / -f 3-);
+
+	ahead_behind=$(git rev-list --left-right --count $curr_branch...$curr_remote/$curr_merge_branch);
+	if [ "" == "$ahead_behind" ] || [ "0\t0" == "$ahead_behind" ]; then
+		return;
+	fi;
+
+	echo -n " "
+	echo "[$GREEN$ahead_behind$NOCOLOR]" | sed "s/\s/$NOCOLOR $RED/"
 }
 
 function prompt_command() {
@@ -56,8 +68,8 @@ function prompt_command() {
 		else
 			git_prompt=" $GREEN$prompt_clean_symbol$branch$NOCOLOR"
 		fi
-        
-        git_prompt="$git_prompt [$(ahead_behind)]"
+
+		git_prompt="$git_prompt$(ahead_behind)"
 	fi
 
 	# Virtualenv
