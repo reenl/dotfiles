@@ -35,8 +35,11 @@
     dstaged = diff --staged
     pop = stash pop
     ci = commit
+    ca = commit --amend
     master = checkout master
     co = checkout
+    di = diff
+    ds = diff --staged
 
 [fetch]
     prune = true
