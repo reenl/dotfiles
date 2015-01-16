@@ -1,0 +1,6 @@
+#!/bin/bash
+
+PHPUNIT="$HOME/.composer/vendor/bin/phpunit"
+XDEBUG_REMOTE_HOST=`echo $SSH_CLIENT | cut -d " " -f 1`
+
+PHP_IDE_CONFIG="serverName=sandbox" XDEBUG_CONFIG="idekey=PHPSTORM remote_host=$XDEBUG_REMOTE_HOST" php -d xdebug.remote_enable=1 $PHPUNIT "$@"
