@@ -38,6 +38,7 @@
     ca = commit --amend
     master = checkout master
     co = checkout
+    cb = checkout -b
     di = diff
     ds = diff --staged
 
