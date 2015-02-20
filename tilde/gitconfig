@@ -34,8 +34,8 @@
     cpatch = checkout --patch --
     dstaged = diff --staged
     pop = stash pop
-    ci = commit
-    ca = commit --amend
+    ci = commit --verbose
+    ca = commit --amend --verbose
     master = checkout master
     co = checkout
     cb = checkout -b
