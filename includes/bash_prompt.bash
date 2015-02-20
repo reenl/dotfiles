@@ -17,30 +17,66 @@ esac
 
 # Symbols
 prompt_symbol="❯"
-prompt_clean_symbol="☀ "
-prompt_dirty_symbol="☂ "
 prompt_venv_symbol="☁ "
 
-function ahead_behind() {
-    curr_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "");
-    if [ "" == "$curr_branch" ]; then
-        # Bad HEAD, probably a new repository
-        return;
-    fi
-    curr_remote=$(git config branch.$curr_branch.remote);
-    if [ "" ==  "$curr_remote" ]; then
-        # No remote
-        return;
-    fi
-    curr_merge_branch=$(git config branch.$curr_branch.merge | cut -d / -f 3);
+function __promptline_git_status {
+  [[ $(git rev-parse --is-inside-work-tree 2>/dev/null) == true ]] || return 1
 
-    ahead_behind=$(git rev-list --left-right --count $curr_branch...$curr_remote/$curr_merge_branch);
-    if [ "" == "$ahead_behind" ] || [ "0\t0" == "$ahead_behind" ]; then
-        return;
-    fi;
+  local added_symbol="● "
+  local unmerged_symbol="✖ "
+  local modified_symbol="✚ "
+  local clean_symbol="✔ "
+  local has_untracked_files_symbol="…"
 
-    echo -n " "
-    echo "[$GREEN$ahead_behind$NOCOLOR]" | sed "s/\s/$NOCOLOR $RED/"
+  local ahead_symbol="↑ "
+  local behind_symbol="↓ "
+
+  local unmerged_count=0 modified_count=0 has_untracked_files=0 added_count=0 is_clean=""
+
+  set -- $(git rev-list --left-right --count @{upstream}...HEAD 2>/dev/null)
+  local behind_count=$1
+  local ahead_count=$2
+
+  local branch
+  local color=$RED
+
+  # Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R), changed (T), Unmerged (U), Unknown (X), Broken (B)
+  while read line; do
+    case "$line" in
+      M*) modified_count=$(( $modified_count + 1 )) ;;
+      U*) unmerged_count=$(( $unmerged_count + 1 )) ;;
+    esac
+  done < <(git diff --name-status)
+
+  while read line; do
+    case "$line" in
+      *) added_count=$(( $added_count + 1 )) ;;
+    esac
+  done < <(git diff --name-status --cached)
+
+  if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+    has_untracked_files=1
+  fi
+
+  if branch=$( { git symbolic-ref --quiet HEAD || git rev-parse --short HEAD; } 2>/dev/null ); then
+      branch=${branch##*/}
+  fi
+
+  if [ $(( unmerged_count + modified_count + has_untracked_files + added_count )) -eq 0 ]; then
+    is_clean=1
+    color=$GREEN
+  fi
+
+  printf $color;
+  [[ $branch ]] && { printf " %s" $branch;}
+  [[ $ahead_count -gt 0 ]]         && { printf " %s" "$ahead_symbol$ahead_count"; }
+  [[ $behind_count -gt 0 ]]        && { printf " %s" "$behind_symbol$behind_count"; }
+  [[ $modified_count -gt 0 ]]      && { printf " %s" "$modified_symbol$modified_count"; }
+  [[ $unmerged_count -gt 0 ]]      && { printf " %s" "$unmerged_symbol$unmerged_count"; }
+  [[ $added_count -gt 0 ]]         && { printf " %s" "$added_symbol$added_count"; }
+  [[ $has_untracked_files -gt 0 ]] && { printf " %s" "$has_untracked_files_symbol"; }
+  [[ $is_clean -gt 0 ]]            && { printf " %s" "$clean_symbol"; }
+  printf $NOCOLOR;
 }
 
 function prompt_command() {
@@ -49,28 +85,7 @@ function prompt_command() {
     [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] && remote=1
 
     # Git branch name and work tree status (only when we are inside Git working tree)
-    local git_prompt=
-    if [[ "true" = "$(git rev-parse --is-inside-work-tree 2>/dev/null)" ]]; then
-        # Branch name
-        local branch="$(git symbolic-ref HEAD 2>/dev/null)"
-        branch="${branch##refs/heads/}"
-
-        # Working tree status (red when dirty)
-        local dirty=
-        # Modified files
-        git diff --no-ext-diff --quiet --exit-code --ignore-submodules 2>/dev/null || dirty=1
-        # Untracked files
-        [ -z "$dirty" ] && test -n "$(git status --porcelain)" && dirty=1
-
-        # Format Git info
-        if [ -n "$dirty" ]; then
-            git_prompt=" $RED$prompt_dirty_symbol$branch$NOCOLOR"
-        else
-            git_prompt=" $GREEN$prompt_clean_symbol$branch$NOCOLOR"
-        fi
-
-        git_prompt="$git_prompt$(ahead_behind)"
-    fi
+    local git_prompt=$(__promptline_git_status)
 
     # Virtualenv
     local venv_prompt=
