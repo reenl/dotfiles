@@ -6,6 +6,7 @@ CURRENT_HASH=`md5sum update | awk '{ print $1 }'`
 echo -n "Pulling changes... "
 git pull
 git submodule init
+git submodule sync
 git submodule update
 
 NEW_HASH=`md5sum update | awk '{ print $1 }'`
