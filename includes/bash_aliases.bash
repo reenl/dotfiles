@@ -5,3 +5,4 @@ alias fuck='sudo $(history -p \!\!)' #https://twitter.com/liamosaur/status/50697
 alias gitclean='git branch --merged master | grep -v "\smaster$" | grep -v "*" | xargs git branch -d'
 alias fixcs='php-cs-fixer fix'
 alias latest='git tag | sort -V | tail -n 1'
+alias myip='curl -sS ip.reenlokum.nl'
