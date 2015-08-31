@@ -35,6 +35,7 @@
     dstaged = diff --staged
     pop = stash pop
     ci = commit --verbose
+    cn = commit --verbose --no-verify
     ca = commit --amend --verbose
     master = checkout master
     co = checkout
