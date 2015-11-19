@@ -87,9 +87,6 @@ export EDITOR='vim'
 export CLICOLOR=1
 export TERM=xterm-256color
 
-# Tell grep to highlight matches
-export GREP_OPTIONS='--color=auto'
-
 # Make less the default pager, and specify some useful defaults.
 less_options=(
 	# If the entire text fits on one screen, just show it and quit. (Be more
