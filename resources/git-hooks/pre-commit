@@ -112,7 +112,7 @@ function validator_php_cs($hash, $fileName, &$output)
         $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
     }
 
-    $tmpDir = '/tmp/cs-check/'.$hash;
+    $tmpDir = '/tmp/cs-check'.$hash;
     $tmp =  $tmpDir.'/'.$fileName;
     run('mkdir -p '.dirname($tmp));
     run('git cat-file -p '.escapeshellarg($hash).' > '.$tmp);
