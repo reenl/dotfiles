@@ -181,7 +181,7 @@ function run($command, &$output = '', &$exitCode = 0, $stdout = 'default', $stde
     do {
         $read = $pipes;
         $write  = $except = array();
-        if (!stream_select($read, $write, $except, 5)) {
+        if (!stream_select($read, $write, $except, 10)) {
             writeln('Timeout on process: '.$command, 'red');
             break;
         }
