@@ -5,7 +5,7 @@ Specialized for PHP, Git and Linux.
 ## Installation
 
 ```bash
-bash -c "`curl -sS dot.reenlokum.nl`"
+bash -c "`curl -sS https://dot.reenlokum.nl`"
 ```
 
 It’ll clone the latest version of dotfiles to `~/dotfiles` and makes symlinks in your home directory.
