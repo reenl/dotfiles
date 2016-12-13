@@ -17,6 +17,14 @@
 
 $exit = 0;
 
+// Allow local hook within the repository
+$root = run('echo ./$(git rev-parse --show-cdup)');
+$localHook = $root.'/hooks/pre-commit';
+if (file_exists($localHook) && !run($localHook, $localOutput)) {
+    echo $localOutput.PHP_EOL;
+    exit(1);
+}
+
 // Initial commit
 $against = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
 if (run('git rev-parse --verify HEAD > /dev/null')) {
