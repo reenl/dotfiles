@@ -136,14 +136,15 @@ function validator_php_cs($hash, $fileName, &$output)
 
         $rule = null;
         foreach ($out as $line) {
-            if (preg_match('#\s+[0-9]+\)\s#', $line)) {
-                $rule = $line;
+            if (preg_match('#^\s+[0-9]+\)\s#', $line, $match)) {
+                $rule = substr($line, strlen($match[0]));
                 break;
             }
         }
 
-        if ($rule !== null && preg_match('#\((.*)\)#', $rule, $matches)) {
-            $output = 'Code Style errors'.PHP_EOL.$matches[1];
+        if ($rule !== null) {
+            $split = explode(' ', $rule, 2);
+            $output = 'Code Style errors'.PHP_EOL.$split[1];
         } else {
             $output = 'Code Style errors'.PHP_EOL.implode(PHP_EOL, $out).PHP_EOL;
         }
