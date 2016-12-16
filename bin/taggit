@@ -72,25 +72,18 @@ fi
 
 next_version="${a[0]}.${a[1]}.${a[2]}"
 
-username=$(git config user.name)
-msg="$1 by $username"
-
 # If its a dry run, just display the new release version number
 if [ ! -z $dry ]
 then
-  echo "Tag message: $msg"
   echo "Next version: v$next_version"
 else
   # If a command fails, exit the script
   set -e
 
-  # Push master
-  git push origin master
-
   # If it's not a dry run, let's go!
   # 3) Add git tag
-  echo "Add git tag v$next_version with message: $msg"
-  git tag -a "v$next_version" -m "$msg"
+  echo "Add git tag v$next_version"
+  git tag "v$next_version"
 
   # 4) Push the new tag
 
