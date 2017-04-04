@@ -126,7 +126,7 @@ function validator_php_cs($hash, $fileName, &$output)
     run('git cat-file -p '.escapeshellarg($hash).' > '.$tmp);
 
     $return = null;
-    run('php-cs-fixer fix --dry-run --verbose --level=symfony'.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return, 'default', 'default');
+    run('php-cs-fixer fix --dry-run --verbose --rules=@Symfony'.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return, 'default', 'default');
 
     run('rm -rf '.escapeshellarg($tmpDir));
 

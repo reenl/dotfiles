@@ -1,3 +1,4 @@
 /bin/composer
 /tilde/vim/.netrwhist
 /resources/git-template/hooks
+/bin/php-cs-fixer
