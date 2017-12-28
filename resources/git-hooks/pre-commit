@@ -114,10 +114,13 @@ function validator_php_syntax($hash, $fileName, &$output)
 
 function validator_php_cs($hash, $fileName, &$output)
 {
-    // Use .php_cs config if project has one.
+    $rules = '';
     $configFile = '';
     if (file_exists('.php_cs')) {
-        $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
+        $configFile = ' --config='.escapeshellarg(realpath('.php_cs'));
+    }
+    else {
+        $rules = ' --rules=@Symfony';
     }
 
     $tmpDir = '/tmp/cs-check'.$hash;
@@ -126,7 +129,7 @@ function validator_php_cs($hash, $fileName, &$output)
     run('git cat-file -p '.escapeshellarg($hash).' > '.$tmp);
 
     $return = null;
-    run('php-cs-fixer fix --dry-run --verbose --rules=@Symfony'.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return, 'default', 'default');
+    run('php-cs-fixer fix --dry-run --verbose'.$rules.$configFile.' '.escapeshellarg($tmp), $currentOutput, $return, 'default', 'default');
 
     run('rm -rf '.escapeshellarg($tmpDir));
 
