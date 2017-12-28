@@ -117,7 +117,7 @@ function validator_php_cs($hash, $fileName, &$output)
     // Use .php_cs config if project has one.
     $configFile = '';
     if (file_exists('.php_cs')) {
-        $configFile = ' --config-file='.escapeshellarg(realpath('.php_cs'));
+        $configFile = '--config='.escapeshellarg(realpath('.php_cs'));
     }
 
     $tmpDir = '/tmp/cs-check'.$hash;
