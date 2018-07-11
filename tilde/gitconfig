@@ -38,11 +38,14 @@
     cn = commit --verbose --no-verify
     ca = commit --amend --verbose
     master = checkout master
+    m = checkout master
     co = checkout
     cb = checkout -b
     di = diff
     ds = diff --staged
     rh = reset HEAD
+    ap = add --patch
+    sync = !git fetch origin && git rebase origin/master
 
 [fetch]
     prune = true
