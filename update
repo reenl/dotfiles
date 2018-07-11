@@ -27,6 +27,12 @@ then
 	curl -sS https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer
 fi
 
+if [ ! -f includes/bash_docker-compose.bash ]
+then
+    echo "Installing docker-compose autocomplete..."
+    curl -L https://raw.githubusercontent.com/docker/compose/1.21.2/contrib/completion/bash/docker-compose -o includes/bash_docker-compose.bash
+fi
+
 if [ ! -f bin/php-cs-fixer ]
 then
     echo "Installing php-cs-fixer..."
@@ -44,3 +50,7 @@ then
 fi
 
 popd > /dev/null
+
+echo "Run the following command to reload your prompt"
+echo
+echo "source ~/.bashrc"
