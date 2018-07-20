@@ -53,13 +53,13 @@
 [push]
     default = current
 
-[branch "master"]
-    # Rebase master by default on pull instead of merge.
-    rebase = true
-
 [init]
     templatedir = ~/dotfiles/resources/git-template
 
 [include]
     path = ~/.gitlocal
 
+[rebase]
+	autoStash = true
+[pull]
+	rebase = true
