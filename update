@@ -36,7 +36,7 @@ fi
 if [ ! -f bin/php-cs-fixer ]
 then
     echo "Installing php-cs-fixer..."
-    curl -L https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.9.0/php-cs-fixer.phar -o bin/php-cs-fixer
+    curl -L https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.13.0/php-cs-fixer.phar -o bin/php-cs-fixer
     chmod +x bin/php-cs-fixer
 fi
 
