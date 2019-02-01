@@ -46,6 +46,7 @@
     rh = reset HEAD
     ap = add --patch
     sync = !git fetch origin && git rebase origin/master
+    latest = !git fetch --tags origin && git tag | sort -rV | head -n 1
 
 [fetch]
     prune = true
