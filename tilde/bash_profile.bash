@@ -89,6 +89,9 @@ export TERM=xterm-256color
 
 # Make less the default pager, and specify some useful defaults.
 less_options=(
+    # Tabwidth 4
+    -x4
+
 	# If the entire text fits on one screen, just show it and quit. (Be more
 	# like "cat" and less like "more".)
 	--quit-if-one-screen
