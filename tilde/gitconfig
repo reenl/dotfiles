@@ -47,9 +47,11 @@
     ap = add --patch
     sync = !git fetch origin && git rebase origin/master
     latest = !git fetch --tags --prune origin && git tag | sort -rV | head -n 1
-    before = !git fetch --tags --prune origin && git tag | sort -rV | head -n 2 | tail -n 1
+    clatest = !git co $(git latest)
+    platest = !git push origin $(git latest)
     changelog = !git log $(git latest)..origin/master --format='%h %an %s' | grep -v 'Merge pull request'
-    changebefore = !git log $(git before)..origin/master --format='%h %an %s' | grep -v 'Merge pull request'
+    before = !git fetch --tags --prune origin && git tag | sort -rV | head -n 2 | tail -n 1
+    changebefore = !git log $(git before)..$(git latest) --format='%h %an %s' | grep -v 'Merge pull request'
     release = !git tag $(semver -n $(git latest))
     hotfix = !git tag $(semver -p $(git latest))
 
