@@ -38,7 +38,7 @@
     cn = commit --verbose --no-verify
     ca = commit --amend --verbose
     master = checkout master
-    m = checkout master
+    m = !git checkout master && git pull origin master
     co = checkout
     cb = checkout -b
     di = diff
@@ -46,7 +46,12 @@
     rh = reset HEAD
     ap = add --patch
     sync = !git fetch origin && git rebase origin/master
-    latest = !git fetch --tags origin && git tag | sort -rV | head -n 1
+    latest = !git fetch --tags --prune origin && git tag | sort -rV | head -n 1
+    before = !git fetch --tags --prune origin && git tag | sort -rV | head -n 2 | tail -n 1
+    changelog = !git log $(git latest)..origin/master --format='%h %an %s' | grep -v 'Merge pull request'
+    changebefore = !git log $(git before)..origin/master --format='%h %an %s' | grep -v 'Merge pull request'
+    release = !git tag $(semver -n $(git latest))
+    hotfix = !git tag $(semver -p $(git latest))
 
 [fetch]
     prune = true

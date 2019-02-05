@@ -10,6 +10,7 @@ alias myip='curl -sS https://ip.reenlokum.nl'
 alias service='sudo service'
 alias dclean='docker images -q --filter "dangling=true" | xargs docker rmi  > /dev/null 2>&1'
 alias punit='phpunit --no-coverage'
+alias openvpn='sudo openvpn'
 alias d=docker
 alias dc=docker-compose
 
