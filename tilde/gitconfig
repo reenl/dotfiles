@@ -54,6 +54,9 @@
     changebefore = !git log $(git before)..$(git latest) --format='%h %an %s' | grep -v 'Merge pull request'
     release = !git tag $(semver -n $(git latest))
     hotfix = !git tag $(semver -p $(git latest))
+    lb = branch
+    lba = branch -a
+    lbr = branch -r
 
 [fetch]
     prune = true
