@@ -57,6 +57,7 @@
     lb = branch
     lba = branch -a
     lbr = branch -r
+    sa = stash apply
 
 [fetch]
     prune = true
