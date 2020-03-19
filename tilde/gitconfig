@@ -27,6 +27,7 @@
     rs = rebase --skip
     rb = rebase
     ri = rebase --interactive
+    ra = rebase --interactive --autosquash
     rstash = stash --keep-index
     graph = log --graph --pretty=format:'%C(magenta)%h%C(blue)%d%Creset %s %C(blue bold)- %an, %ar%Creset'
     patch = add --patch
@@ -37,6 +38,7 @@
     ci = commit --verbose
     cn = commit --verbose --no-verify
     ca = commit --amend --verbose
+    cf = commit --fixup
     master = checkout master
     m = !git checkout master && git pull origin master
     co = checkout
