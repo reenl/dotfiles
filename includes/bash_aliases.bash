@@ -13,6 +13,9 @@ alias punit='phpunit --no-coverage'
 alias openvpn='sudo openvpn'
 alias d=docker
 alias dc=docker-compose
+alias gh=
 
 complete -F _docker d
 complete -F _docker_compose dc
+
+function grh() { history | grep "$1"; } #Grep through command history | Nice alternative for ctrl + r
