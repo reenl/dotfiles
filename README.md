@@ -2,6 +2,10 @@
 
 Specialized for PHP, Git and Linux.
 
+## Prerequisites
+PHP
+Python
+
 ## Installation
 
 ```bash
